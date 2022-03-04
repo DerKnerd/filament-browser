@@ -13,8 +13,10 @@
 
 #endif
 
+#include <wx/clipbrd.h>
 #include <wx/dataview.h>
 #include <wx/persist.h>
+#include <wx/srchctrl.h>
 #include <utility>
 #include <vector>
 #include <sstream>
@@ -43,6 +45,8 @@ enum FilamentSpoolListColumns {
 
 enum MainWindowActions {
     Reload = 200,
+    CopyName,
+    Search,
 };
 
 enum MainWindowIDs {
@@ -105,19 +109,26 @@ public:
 
     void Fill(const std::vector<FilamentSpool> &data);
 
-    std::vector<FilamentSpool*> items;
+    std::vector<FilamentSpool *> items;
 };
 
 class MainWindow : public wxFrame {
 private:
-    wxDataViewListCtrl *dvlFilamentSpools{};
-    wxToolBar *toolBar{};
+    wxDataViewListCtrl *dvlFilamentSpools;
+    wxToolBar *toolBar;
+    wxSearchCtrl *searchCtrl;
 
     FilamentSpoolDataViewListModel *filamentSpoolDataViewListModel;
+
+    void loadData(std::string keyword);
 public:
     MainWindow();
 
+    void handleSearch(wxCommandEvent& event);
+
     void handleReload(wxCommandEvent &event);
+
+    void handleCopyName(wxCommandEvent &event);
 };
 
 

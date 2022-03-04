@@ -84,7 +84,14 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     toolBar = CreateToolBar(wxTB_HORIZONTAL | wxTB_HORZ_LAYOUT | wxTB_NOICONS | wxTB_TEXT);
     toolBar->AddTool(MainWindowActions::Reload, _("Filamente laden"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL, "", "",
                      nullptr);
+    toolBar->AddTool(MainWindowActions::CopyName, _("Filamentname kopieren"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
+                     "", "", nullptr);
+
+    searchCtrl = new wxSearchCtrl(toolBar, Search, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    searchCtrl->ShowSearchButton(true);
+    toolBar->AddControl(searchCtrl);
     toolBar->Realize();
+    CreateStatusBar();
 
     auto panel = new wxPanel(this);
     auto contentSizer = new wxBoxSizer(wxVERTICAL);
@@ -119,26 +126,57 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     }
 
     Bind(wxEVT_MENU, &MainWindow::handleReload, this, Reload);
+    Bind(wxEVT_MENU, &MainWindow::handleCopyName, this, CopyName);
+    Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &MainWindow::handleSearch, this, Search);
+    Bind(wxEVT_TEXT_ENTER, &MainWindow::handleSearch, this, Search);
+    loadData("");
 }
 
 void MainWindow::handleReload(wxCommandEvent &event) {
-    pqxx::connection connection{CONNECTION_STRING};
-    pqxx::work txn{connection};
+    searchCtrl->SetValue(wxEmptyString);
+    loadData("");
+}
 
-    pqxx::result resultSet{txn.exec(
-            "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight ORDER BY profile.vendor, profile.material, spool.name")};
-
-    auto items = std::vector<FilamentSpool>();
-
-    for (auto row: resultSet) {
-        items.emplace_back(FilamentSpool(
-                wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
-                wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
-                row["diameter"].as<float>()));
+void MainWindow::handleCopyName(wxCommandEvent &event) {
+    if (dvlFilamentSpools->HasSelection()) {
+        auto selectedItem = dvlFilamentSpools->GetSelection();
+        auto spool = (FilamentSpool *) selectedItem.GetID();
+        if (wxClipboard::Get()->Open()) {
+            wxClipboard::Get()->SetData(new wxTextDataObject(spool->name));
+            wxClipboard::Get()->Close();
+            wxLogStatus(spool->name + " kopiert");
+        }
     }
+}
 
-    txn.commit();
+void MainWindow::handleSearch(wxCommandEvent &event) {
+    loadData(event.GetString().utf8_str().data());
+}
 
-    filamentSpoolDataViewListModel->Fill(items);
-    dvlFilamentSpools->AssociateModel(filamentSpoolDataViewListModel);
+void MainWindow::loadData(std::string keyword) {
+    try {
+        pqxx::connection connection{CONNECTION_STRING};
+        pqxx::work txn{connection};
+        auto query =
+                "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight AND spool.name LIKE '%" +
+                txn.esc(keyword) + "%' ORDER BY profile.vendor, profile.material, spool.name";
+
+        pqxx::result resultSet{txn.exec(query)};
+
+        auto items = std::vector<FilamentSpool>();
+
+        for (auto row: resultSet) {
+            items.emplace_back(FilamentSpool(
+                    wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
+                    wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
+                    row["diameter"].as<float>()));
+        }
+
+        txn.commit();
+
+        filamentSpoolDataViewListModel->Fill(items);
+        dvlFilamentSpools->AssociateModel(filamentSpoolDataViewListModel);
+    } catch (std::exception &exception) {
+        wxLogStatus(exception.what());
+    }
 }
