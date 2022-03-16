@@ -5,7 +5,7 @@
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://ender-3-v2.ulbricht.cloud:5432/octoprint_filamentmanager</jdbc-url>
+      <jdbc-url>jdbc:postgresql://printer-postgres:5432/octoprint_filamentmanager</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

@@ -43,6 +43,12 @@ void FilamentSpoolDataViewListModel::GetValue(wxVariant &variant, const wxDataVi
         case ColDiameter:
             variant = spool->getDiameter();
             break;
+        case ColPricePerKilo:
+            variant = spool->getPricePerKilo();
+            break;
+        case ColPricePerSpool:
+            variant = spool->getPricePerSpool();
+            break;
         default:
             wxFAIL;
             break;
@@ -67,7 +73,7 @@ void FilamentSpoolDataViewListModel::Fill(const std::vector<FilamentSpool> &data
     auto parent = wxDataViewItem(nullptr);
     for (const auto &item: data) {
         auto spool = new FilamentSpool(item.name, item.vendor, item.material, item.weightUsed, item.weightInitial,
-                                       item.diameter);
+                                       item.diameter, item.cost);
         items.emplace_back(spool);
         ItemAdded(parent, wxDataViewItem(spool));
     }
@@ -75,6 +81,71 @@ void FilamentSpoolDataViewListModel::Fill(const std::vector<FilamentSpool> &data
 
 FilamentSpoolDataViewListModel::FilamentSpoolDataViewListModel()
         : wxDataViewModel(), items(std::vector<FilamentSpool *>()) {}
+
+int
+FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDataViewItem &item2, unsigned int column,
+                                        bool ascending) const {
+    auto item1Data = static_cast<FilamentSpool *>(item1.GetID());
+    auto item2Data = static_cast<FilamentSpool *>(item2.GetID());
+
+    auto weightAvailable1 = item1Data->weightInitial - item1Data->weightUsed;
+    auto weightAvailable2 = item2Data->weightInitial - item2Data->weightUsed;
+    auto pricePerKilo1 = (item1Data->cost / item1Data->weightInitial * 1000);
+    auto pricePerKilo2 = (item2Data->cost / item2Data->weightInitial * 1000);
+    switch (column) {
+        case ColName:
+        case ColVendor:
+        case ColMaterial:
+            return wxDataViewModel::Compare(item1, item2, column, ascending);
+        case ColWeightAvailable:
+            if (weightAvailable1 == weightAvailable2) {
+                return 0;
+            } else if (weightAvailable1 < weightAvailable2) {
+                return ascending ? 1 : -1;
+            } else if (weightAvailable1 > weightAvailable2) {
+                return ascending ? -1 : 1;
+            }
+            break;
+        case ColWeightInitial:
+            if (item1Data->weightInitial == item2Data->weightInitial) {
+                return 0;
+            } else if (item1Data->weightInitial < item2Data->weightInitial) {
+                return ascending ? 1 : -1;
+            } else if (item1Data->weightInitial > item2Data->weightInitial) {
+                return ascending ? -1 : 1;
+            }
+            break;
+        case ColDiameter:
+            if (item1Data->diameter == item2Data->diameter) {
+                return 0;
+            } else if (item1Data->diameter < item2Data->diameter) {
+                return ascending ? 1 : -1;
+            } else if (item1Data->diameter > item2Data->diameter) {
+                return ascending ? -1 : 1;
+            }
+            break;
+        case ColPricePerKilo:
+            if (pricePerKilo1 == weightAvailable2) {
+                return 0;
+            } else if (pricePerKilo1 < pricePerKilo2) {
+                return ascending ? 1 : -1;
+            } else if (pricePerKilo1 > pricePerKilo2) {
+                return ascending ? -1 : 1;
+            }
+            break;
+        case ColPricePerSpool:
+            if (item1Data->cost == item2Data->cost) {
+                return 0;
+            } else if (item1Data->cost < item2Data->cost) {
+                return ascending ? 1 : -1;
+            } else if (item1Data->cost > item2Data->cost) {
+                return ascending ? -1 : 1;
+            }
+            break;
+    }
+
+    return 0;
+}
 
 MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxDefaultPosition, wxSize(1280, 600),
                                    wxDEFAULT_FRAME_STYLE | wxCLIP_CHILDREN) {
@@ -100,17 +171,29 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     dvlFilamentSpools = new wxDataViewListCtrl(panel, Spools, wxDefaultPosition,
                                                wxDLG_UNIT(this, wxSize(-1, -1)), wxDV_ROW_LINES | wxDV_SINGLE);
     dvlFilamentSpools->AppendTextColumn(_("Name"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2), wxALIGN_LEFT,
-                                        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                        wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_("Hersteller"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
-                                        wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                      wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_("Material"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
-                                        wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxALIGN_LEFT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                      wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_("Restgewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
-                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                       wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_(L"Ursprüngliches Gewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
-                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                       wxDATAVIEW_COL_SORTABLE);
+    dvlFilamentSpools->AppendTextColumn(_(L"Preis pro Kilo"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
+                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                       wxDATAVIEW_COL_SORTABLE);
+    dvlFilamentSpools->AppendTextColumn(_(L"Preis pro Rolle"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
+                                        wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                                       wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_("Durchmesser"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2), wxALIGN_RIGHT,
-                                        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE);
+                                        wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
+                                        wxDATAVIEW_COL_SORTABLE);
 
     contentSizer->Add(dvlFilamentSpools, 1, wxALL | wxEXPAND, WXC_FROM_DIP(5));
 
@@ -158,7 +241,7 @@ void MainWindow::loadData(std::string keyword) {
         pqxx::connection connection{CONNECTION_STRING};
         pqxx::work txn{connection};
         auto query =
-                "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight AND spool.name LIKE '%" +
+                "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight, spool.cost FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight AND spool.name LIKE '%" +
                 txn.esc(keyword) + "%' ORDER BY profile.vendor, profile.material, spool.name";
 
         pqxx::result resultSet{txn.exec(query)};
@@ -169,7 +252,7 @@ void MainWindow::loadData(std::string keyword) {
             items.emplace_back(FilamentSpool(
                     wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
                     wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
-                    row["diameter"].as<float>()));
+                    row["diameter"].as<float>(), row["cost"].as<float>()));
         }
 
         txn.commit();

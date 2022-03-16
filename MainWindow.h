@@ -39,6 +39,8 @@ enum FilamentSpoolListColumns {
     ColMaterial,
     ColWeightAvailable,
     ColWeightInitial,
+    ColPricePerKilo,
+    ColPricePerSpool,
     ColDiameter,
     SpoolColumnCount,
 };
@@ -56,9 +58,10 @@ enum MainWindowIDs {
 class FilamentSpool {
 public:
     FilamentSpool(const wxString &name, const wxString &vendor, const wxString &material, double weightUsed,
-                  double weightInitial, float diameter) : name(name), vendor(vendor), material(material),
-                                                          weightUsed(weightUsed), weightInitial(weightInitial),
-                                                          diameter(diameter) {}
+                  double weightInitial, float diameter, float cost) : name(name), vendor(vendor), material(material),
+                                                                      weightUsed(weightUsed),
+                                                                      weightInitial(weightInitial),
+                                                                      diameter(diameter), cost(cost) {}
 
     wxString name;
     wxString vendor;
@@ -66,6 +69,7 @@ public:
     double weightUsed;
     double weightInitial;
     float diameter;
+    float cost;
 
     [[nodiscard]] wxString getWeightAvailable() const {
         auto ss = std::stringstream();
@@ -84,6 +88,20 @@ public:
     [[nodiscard]] wxString getDiameter() const {
         auto ss = std::stringstream();
         ss << std::fixed << std::setprecision(2) << diameter << "mm";
+
+        return ss.str();
+    }
+
+    [[nodiscard]] wxString getPricePerKilo() const {
+        auto ss = std::wstringstream();
+        ss << std::fixed << std::setprecision(2) << (cost / weightInitial * 1000) << L" €";
+
+        return ss.str();
+    }
+
+    [[nodiscard]] wxString getPricePerSpool() const {
+        auto ss = std::wstringstream();
+        ss << std::fixed << std::setprecision(2) << cost << L" €";
 
         return ss.str();
     }
@@ -107,6 +125,9 @@ public:
 
     [[nodiscard]] bool IsContainer(const wxDataViewItem &item) const override;
 
+    int Compare(const wxDataViewItem &item1, const wxDataViewItem &item2, unsigned int column,
+                bool ascending) const override;
+
     void Fill(const std::vector<FilamentSpool> &data);
 
     std::vector<FilamentSpool *> items;
@@ -121,10 +142,11 @@ private:
     FilamentSpoolDataViewListModel *filamentSpoolDataViewListModel;
 
     void loadData(std::string keyword);
+
 public:
     MainWindow();
 
-    void handleSearch(wxCommandEvent& event);
+    void handleSearch(wxCommandEvent &event);
 
     void handleReload(wxCommandEvent &event);
 
