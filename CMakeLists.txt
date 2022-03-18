@@ -8,9 +8,12 @@ include(./conan.cmake)
 
 ucm_set_runtime(STATIC)
 if (WIN32 OR MINGW)
+    add_compile_definitions(__WXMSW__ _UNICODE)
+    set(BUILD_SHARED_LIBS false)
     set(CMAKE_SYSTEM_NAME Windows)
     set(CMAKE_SYSTEM_PROCESSOR x86_64)
     set(CONAN_ARCHITECTURE x86_64)
+    set(CMAKE_WIN32_EXECUTABLE 1)
     set(options Poco:enable_netssl_win=True Poco:enable_netssl=False)
 
     conan_cmake_run(

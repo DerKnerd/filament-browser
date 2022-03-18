@@ -93,17 +93,17 @@ public:
     }
 
     [[nodiscard]] wxString getPricePerKilo() const {
-        auto ss = std::wstringstream();
-        ss << std::fixed << std::setprecision(2) << (cost / weightInitial * 1000) << L" €";
+        auto ss = std::stringstream();
+        ss << std::fixed << std::setprecision(2) << (cost / weightInitial * 1000.0) << " €";
 
-        return ss.str();
+        return wxString::FromUTF8(ss.str());
     }
 
     [[nodiscard]] wxString getPricePerSpool() const {
-        auto ss = std::wstringstream();
-        ss << std::fixed << std::setprecision(2) << cost << L" €";
+        auto ss = std::stringstream();
+        ss << std::fixed << std::setprecision(2) << cost << " €";
 
-        return ss.str();
+        return wxString::FromUTF8(ss.str());
     }
 };
 

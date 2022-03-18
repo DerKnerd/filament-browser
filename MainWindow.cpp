@@ -183,7 +183,7 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     dvlFilamentSpools->AppendTextColumn(_("Restgewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
                                         wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
                                                        wxDATAVIEW_COL_SORTABLE);
-    dvlFilamentSpools->AppendTextColumn(_(L"Ursprüngliches Gewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
+    dvlFilamentSpools->AppendTextColumn(wxString::FromUTF8("Ursprüngliches Gewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
                                         wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
                                                        wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_(L"Preis pro Kilo"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
