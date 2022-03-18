@@ -158,7 +158,8 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     toolBar->AddTool(MainWindowActions::CopyName, _("Filamentname kopieren"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
                      "", "", nullptr);
 
-    searchCtrl = new wxSearchCtrl(toolBar, Search, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+    searchCtrl = new wxSearchCtrl(toolBar, Search, wxEmptyString, wxDefaultPosition, wxSize(200, -1),
+                                  wxTE_PROCESS_ENTER);
     searchCtrl->ShowSearchButton(true);
     toolBar->AddControl(searchCtrl);
     toolBar->Realize();
