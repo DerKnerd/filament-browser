@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="CMakeSharedSettings">
-    <configurations>
-      <configuration PROFILE_NAME="Release Windows x64" ENABLED="true" CONFIG_NAME="Release" TOOLCHAIN_NAME="MinGW" GENERATION_OPTIONS="-DWIN32=1" />
-      <configuration PROFILE_NAME="Release Linux x64" ENABLED="true" CONFIG_NAME="Release" TOOLCHAIN_NAME="Default" />
-    </configurations>
-  </component>
-</project>

@@ -1,8 +1,3 @@
-toolchain=/usr/x86_64-w64-mingw32 # Adjust this path
-target_host=x86_64-w64-mingw32
-cc_compiler=gcc
-cxx_compiler=g++
-
 [env]
 CONAN_CMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32  # Optional, for CMake to find things in that folder
 CONAN_CMAKE_SYSROOT=/usr/x86_64-w64-mingw32  # Optional, if we want to define sysroot
@@ -22,6 +17,6 @@ arch=x86_64
 compiler=gcc
 
 # Adjust to the gcc version of your MinGW package
-compiler.version=11.2
+compiler.version=10
 compiler.libcxx=libstdc++11
 build_type=Release

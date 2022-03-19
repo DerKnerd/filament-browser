@@ -14,13 +14,6 @@ if (WIN32 OR MINGW)
     set(CMAKE_SYSTEM_NAME Windows)
     set(CMAKE_SYSTEM_PROCESSOR x86_64)
     set(CMAKE_WIN32_EXECUTABLE 1)
-    set(options Poco:enable_netssl_win=True Poco:enable_netssl=False)
-
-    conan_cmake_run(
-            BASIC_SETUP
-            ARCH ${CONAN_ARCHITECTURE}
-            PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan
-    )
 endif ()
 
 set(wxUSE_STL ON)
@@ -37,12 +30,16 @@ conan_cmake_configure(
 
 conan_cmake_autodetect(settings)
 
-if (WIN32 OR MINGW)
+if (MINGW)
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
             REMOTE conancenter
-            SETTINGS ${settings}
-            OPTIONS Poco:enable_netssl_win=True Poco:enable_netssl=False)
+            PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
+else ()
+    conan_cmake_install(PATH_OR_REFERENCE .
+            BUILD missing
+            REMOTE conancenter
+            SETTINGS ${settings})
 endif ()
 
 find_package(libpqxx)
