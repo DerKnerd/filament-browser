@@ -3,6 +3,8 @@ project(filament_manager CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_definitions("-std=c++11")
+
 include(./ucm.cmake)
 include(./conan.cmake)
 
@@ -23,6 +25,7 @@ if (WIN32 OR MINGW)
             ENV CXX=${CMAKE_CXX_COMPILER}
             ENV CFLAGS=${CMAKE_C_FLAGS}
             ENV CXXFLAGS=${CMAKE_CXX_FLAGS}
+            PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan
     )
 endif ()
 
@@ -40,14 +43,13 @@ conan_cmake_configure(
 
 conan_cmake_autodetect(settings)
 
-conan_cmake_install(PATH_OR_REFERENCE .
-        BUILD missing
-        REMOTE conancenter
-        SETTINGS ${settings}
-        SETTINGS ${CONAN_SETTINGS}
-        SETTINGS os=Windows
-        SETTINGS compiler.cppstd=20
-        OPTIONS Poco:enable_netssl_win=True Poco:enable_netssl=False)
+if (WIN32 OR MINGW)
+    conan_cmake_install(PATH_OR_REFERENCE .
+            BUILD missing
+            REMOTE conancenter
+            SETTINGS ${settings}
+            OPTIONS Poco:enable_netssl_win=True Poco:enable_netssl=False)
+endif ()
 
 find_package(libpqxx)
 
