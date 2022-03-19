@@ -3,7 +3,6 @@ project(filament_manager CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_definitions("-std=c++11")
 
 include(./ucm.cmake)
 include(./conan.cmake)
@@ -14,17 +13,12 @@ if (WIN32 OR MINGW)
     set(BUILD_SHARED_LIBS false)
     set(CMAKE_SYSTEM_NAME Windows)
     set(CMAKE_SYSTEM_PROCESSOR x86_64)
-    set(CONAN_ARCHITECTURE x86_64)
     set(CMAKE_WIN32_EXECUTABLE 1)
     set(options Poco:enable_netssl_win=True Poco:enable_netssl=False)
 
     conan_cmake_run(
             BASIC_SETUP
             ARCH ${CONAN_ARCHITECTURE}
-            ENV CC=${CMAKE_C_COMPILER}
-            ENV CXX=${CMAKE_CXX_COMPILER}
-            ENV CFLAGS=${CMAKE_C_FLAGS}
-            ENV CXXFLAGS=${CMAKE_CXX_FLAGS}
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan
     )
 endif ()
