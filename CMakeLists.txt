@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(filament_manager CXX)
 
-set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_CXX_STANDARD 20)
 
 include(./ucm.cmake)
 include(./conan.cmake)
@@ -34,6 +34,7 @@ if (MINGW)
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
             REMOTE conancenter
+            SETTINGS ${settings}
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
 else ()
     conan_cmake_install(PATH_OR_REFERENCE .

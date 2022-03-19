@@ -9,6 +9,7 @@ CC=/usr/bin/x86_64-w64-mingw32-gcc-posix
 CXX=/usr/bin/x86_64-w64-mingw32-g++-posix
 STRIP=/usr/bin/x86_64-w64-mingw32-strip
 RC=/usr/bin/x86_64-w64-mingw32-windres
+WIN32=1
 
 [settings]
 # We are cross-building to Windows
