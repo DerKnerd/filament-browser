@@ -43,6 +43,8 @@ conan_cmake_autodetect(settings)
 conan_cmake_install(PATH_OR_REFERENCE .
         BUILD missing
         REMOTE conancenter
+        SETTINGS ${settings}
+        SETTINGS ${CONAN_SETTINGS}
         SETTINGS os=Windows
         SETTINGS compiler.cppstd=20
         OPTIONS Poco:enable_netssl_win=True Poco:enable_netssl=False)
