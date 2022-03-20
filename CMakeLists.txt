@@ -19,12 +19,16 @@ endif ()
 set(wxUSE_STL ON)
 set(wxBUILD_SHARED OFF)
 add_subdirectory(libs/wxWidgets)
+add_subdirectory(libs/libpqxx)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
+conan_add_remote(NAME conan.imanuel.dev
+        URL https://conan.imanuel.dev/artifactory/api/conan/conan-virtual)
+
 conan_cmake_configure(
-        REQUIRES libpqxx/7.7.0
+        REQUIRES libpq/12.2
         GENERATORS cmake_find_package
 )
 
@@ -33,17 +37,17 @@ conan_cmake_autodetect(settings)
 if (MINGW)
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
-            REMOTE conancenter
+            REMOTE conan.imanuel.dev
             SETTINGS ${settings}
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
 else ()
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
-            REMOTE conancenter
+            REMOTE conan.imanuel.dev
             SETTINGS ${settings})
 endif ()
 
-find_package(libpqxx)
+find_package(pqxx)
 
 add_executable(filament_manager ${target} main.cpp MainApp.h MainApp.cpp MainWindow.cpp MainWindow.h)
-target_link_libraries(filament_manager PRIVATE libpqxx::libpqxx wx::core wx::base)
+target_link_libraries(filament_manager PRIVATE pqxx wx::core wx::base)

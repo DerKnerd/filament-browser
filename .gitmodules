@@ -1,3 +1,6 @@
 [submodule "libs/wxWidgets"]
 	path = libs/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets.git
+[submodule "libs/libpqxx"]
+	path = libs/libpqxx
+	url = https://github.com/jtv/libpqxx.git

@@ -183,7 +183,8 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     dvlFilamentSpools->AppendTextColumn(_("Restgewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
                                         wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
                                                        wxDATAVIEW_COL_SORTABLE);
-    dvlFilamentSpools->AppendTextColumn(wxString::FromUTF8("Ursprüngliches Gewicht"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
+    dvlFilamentSpools->AppendTextColumn(wxString::FromUTF8("Ursprüngliches Gewicht"), wxDATAVIEW_CELL_INERT,
+                                        WXC_FROM_DIP(-2),
                                         wxALIGN_RIGHT, wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
                                                        wxDATAVIEW_COL_SORTABLE);
     dvlFilamentSpools->AppendTextColumn(_(L"Preis pro Kilo"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2),
@@ -249,12 +250,12 @@ void MainWindow::loadData(std::string keyword) {
 
         auto items = std::vector<FilamentSpool>();
 
-        for (auto row: resultSet) {
-            items.emplace_back(FilamentSpool(
-                    wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
-                    wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
-                    row["diameter"].as<float>(), row["cost"].as<float>()));
-        }
+//        for (auto row: resultSet) {
+//            items.emplace_back(FilamentSpool(
+//                    wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
+//                    wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
+//                    row["diameter"].as<float>(), row["cost"].as<float>()));
+//        }
 
         txn.commit();
 
