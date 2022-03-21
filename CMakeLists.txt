@@ -18,8 +18,13 @@ endif ()
 
 set(wxUSE_STL ON)
 set(wxBUILD_SHARED OFF)
-add_subdirectory(libs/wxWidgets)
-add_subdirectory(libs/libpqxx)
+set(wxUSE_AUI OFF)
+set(wxUSE_RIBBON OFF)
+set(wxUSE_RICHTEXT OFF)
+set(wxUSE_XRC OFF)
+set(wxUSE_ADV OFF)
+set(wxUSE_OPENGL OFF)
+set(wxUSE_PROPGRID OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
@@ -41,13 +46,15 @@ if (MINGW)
             SETTINGS ${settings}
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
 else ()
-    conan_cmake_install(PATH_OR_REFERENCE .
-            BUILD missing
-            REMOTE conan.imanuel.dev
-            SETTINGS ${settings})
+conan_cmake_install(PATH_OR_REFERENCE .
+        BUILD all
+        REMOTE conan.imanuel.dev
+        SETTINGS ${settings})
 endif ()
 
-find_package(pqxx)
+find_package(PostgreSQL)
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/wxWidgets)
+add_subdirectory(${CMAKE_SOURCE_DIR}/libs/libpqxx)
 
 add_executable(filament_manager ${target} main.cpp MainApp.h MainApp.cpp MainWindow.cpp MainWindow.h)
-target_link_libraries(filament_manager PRIVATE pqxx wx::core wx::base)
+target_link_libraries(filament_manager PRIVATE PostgreSQL::PostgreSQL pqxx wx::core wx::base)

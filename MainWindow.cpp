@@ -3,6 +3,7 @@
 //
 
 #include "MainWindow.h"
+#include <pqxx/result>
 
 unsigned int
 FilamentSpoolDataViewListModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const {
@@ -250,12 +251,12 @@ void MainWindow::loadData(std::string keyword) {
 
         auto items = std::vector<FilamentSpool>();
 
-//        for (auto row: resultSet) {
-//            items.emplace_back(FilamentSpool(
-//                    wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
-//                    wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
-//                    row["diameter"].as<float>(), row["cost"].as<float>()));
-//        }
+        for (auto row: resultSet) {
+            items.emplace_back(FilamentSpool(
+                    wxString::FromUTF8(row["name"].c_str()), wxString::FromUTF8(row["vendor"].c_str()),
+                    wxString::FromUTF8(row["material"].c_str()), row["used"].as<double>(), row["weight"].as<double>(),
+                    row["diameter"].as<float>(), row["cost"].as<float>()));
+        }
 
         txn.commit();
 
