@@ -244,7 +244,7 @@ void MainWindow::loadData(std::string keyword) {
         pqxx::connection connection{CONNECTION_STRING};
         pqxx::work txn{connection};
         auto query =
-                "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight, spool.cost FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight AND spool.name LIKE '%" +
+                "SELECT profile.vendor, profile.material, profile.diameter, spool.name, spool.used, spool.weight, spool.cost FROM spools spool JOIN profiles profile on profile.id = spool.profile_id WHERE spool.used <> spool.weight AND spool.name ILIKE '%" +
                 txn.esc(keyword) + "%' ORDER BY profile.vendor, profile.material, spool.name";
 
         pqxx::result resultSet{txn.exec(query)};

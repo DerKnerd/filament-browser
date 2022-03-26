@@ -1,0 +1,7 @@
+version: "3"
+services:
+  builder-mingw:
+    build: .
+    volumes:
+      - .:/filament-browser
+      - ./out:/out
