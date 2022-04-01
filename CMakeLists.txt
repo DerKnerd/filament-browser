@@ -10,7 +10,6 @@ include(./conan.cmake)
 
 if (WIN32 OR MINGW)
     ucm_set_runtime(STATIC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     add_compile_definitions(__WXMSW__ _UNICODE)
     set(BUILD_SHARED_LIBS true)
     set(CMAKE_SYSTEM_NAME Windows)
@@ -36,38 +35,30 @@ conan_add_remote(NAME conan.imanuel.dev
 
 conan_cmake_autodetect(settings)
 
+conan_cmake_configure(
+        REQUIRES libpqxx/7.7.2
+        GENERATORS cmake_find_package
+)
+
 if (MINGW)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
-    conan_cmake_configure(
-            REQUIRES libpq/13.6
-            GENERATORS cmake_find_package
-            IMPORTS "bin, *.dll -> /out/bin"
-            IMPORTS "lib, *.dll -> /out/bin"
-            OPTIONS libq:shared=True
-    )
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
             REMOTE conan.imanuel.dev
-            SETTINGS ${settings}
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
 else ()
-    conan_cmake_configure(
-            REQUIRES libpq/13.6
-            GENERATORS cmake_find_package
-    )
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD all
             REMOTE conan.imanuel.dev
             SETTINGS ${settings})
 endif ()
 
-find_package(PostgreSQL)
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/wxWidgets)
-add_subdirectory(${CMAKE_SOURCE_DIR}/libs/libpqxx)
 
+find_package(libpqxx)
 add_executable(filament_manager ${target} main.rc main.cpp MainApp.h MainApp.cpp MainWindow.cpp MainWindow.h)
 if (MINGW)
-    target_link_libraries(filament_manager PRIVATE -static PostgreSQL::PostgreSQL pqxx wx::core wx::base gcc stdc++ winpthread)
+    target_link_libraries(filament_manager PRIVATE libpqxx::libpqxx wx::core wx::base -static gcc stdc++ winpthread)
 else ()
-    target_link_libraries(filament_manager PRIVATE PostgreSQL::PostgreSQL pqxx wx::core wx::base)
+    target_link_libraries(filament_manager PRIVATE libpqxx::libpqxx wx::core wx::base)
 endif ()
