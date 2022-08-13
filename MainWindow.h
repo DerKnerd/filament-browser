@@ -42,6 +42,7 @@ enum FilamentSpoolListColumns {
     ColPricePerKilo,
     ColPricePerSpool,
     ColDiameter,
+    ColDensity,
     SpoolColumnCount,
 };
 
@@ -107,6 +108,35 @@ public:
     }
 };
 
+class FilamentProfile {
+public:
+    wxString vendor;
+    wxString material;
+    float density;
+    float diameter;
+
+    FilamentProfile(const wxString &vendor, const wxString &material, float density, float diameter) : vendor(vendor),
+                                                                                                       material(
+                                                                                                               material),
+                                                                                                       density(density),
+                                                                                                       diameter(
+                                                                                                               diameter) {}
+
+    [[nodiscard]] wxString getDiameter() const {
+        auto ss = std::stringstream();
+        ss << std::fixed << std::setprecision(2) << diameter << "mm";
+
+        return ss.str();
+    }
+
+    [[nodiscard]] wxString getDensity() const {
+        auto ss = std::stringstream();
+        ss << std::fixed << std::setprecision(2) << density << "mm";
+
+        return ss.str();
+    }
+};
+
 class FilamentSpoolDataViewListModel : public wxDataViewModel {
 public:
     unsigned int GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const override;
@@ -131,6 +161,32 @@ public:
     void Fill(const std::vector<FilamentSpool> &data);
 
     std::vector<FilamentSpool *> items;
+};
+
+class FilamentProfileDataViewListModel : public wxDataViewModel {
+public:
+    unsigned int GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const override;
+
+    [[nodiscard]] unsigned int GetColumnCount() const override;
+
+    FilamentProfileDataViewListModel();
+
+    [[nodiscard]] wxString GetColumnType(unsigned int col) const override;
+
+    void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const override;
+
+    bool SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col) override;
+
+    [[nodiscard]] wxDataViewItem GetParent(const wxDataViewItem &item) const override;
+
+    [[nodiscard]] bool IsContainer(const wxDataViewItem &item) const override;
+
+    int Compare(const wxDataViewItem &item1, const wxDataViewItem &item2, unsigned int column,
+                bool ascending) const override;
+
+    void Fill(const std::vector<FilamentProfile> &data);
+
+    std::vector<FilamentProfile *> items;
 };
 
 class MainWindow : public wxFrame {
