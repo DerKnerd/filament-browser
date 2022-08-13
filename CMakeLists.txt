@@ -4,6 +4,7 @@ project(filament_manager CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CONAN_REVISIONS_ENABLED 1)
 
 include(./ucm.cmake)
 include(./conan.cmake)
@@ -45,6 +46,7 @@ if (MINGW)
     conan_cmake_install(PATH_OR_REFERENCE .
             BUILD missing
             REMOTE conan.imanuel.dev
+            SETTINGS general.revisions_enabled=1
             PROFILE ${CMAKE_SOURCE_DIR}/linux_to_win64_conan)
 else ()
     conan_cmake_install(PATH_OR_REFERENCE .

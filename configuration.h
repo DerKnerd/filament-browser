@@ -6,6 +6,6 @@
 #define FILAMENT_MANAGER_CONFIGURATION_H
 
 // Replace with your connection string
-#define CONNECTION_STRING "postgresql://octoprint:octoprint@printer-postgres:5432/octoprint_filamentmanager"
+#define CONNECTION_STRING "postgresql://octoprint:octoprint@192.168.2.99:5432/octoprint_filamentmanager"
 
 #endif //FILAMENT_MANAGER_CONFIGURATION_H
