@@ -58,7 +58,7 @@ endif ()
 add_subdirectory(${CMAKE_SOURCE_DIR}/libs/wxWidgets)
 
 find_package(libpqxx)
-add_executable(filament_manager ${target} main.rc main.cpp MainApp.h MainApp.cpp MainWindow.cpp MainWindow.h ProfileListWindow.cpp ProfileListWindow.h)
+add_executable(filament_manager ${target} main.rc main.cpp MainApp.h MainApp.cpp MainWindow.cpp MainWindow.h ProfileListWindow.cpp ProfileListWindow.h NewSpoolWindow.cpp NewSpoolWindow.h)
 if (MINGW)
     target_link_libraries(filament_manager PRIVATE libpqxx::libpqxx wx::core wx::base -static gcc stdc++ winpthread)
 else ()

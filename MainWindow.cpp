@@ -4,6 +4,7 @@
 
 #include "MainWindow.h"
 #include "ProfileListWindow.h"
+#include "NewSpoolWindow.h"
 
 unsigned int
 FilamentSpoolDataViewListModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const {
@@ -15,7 +16,7 @@ FilamentSpoolDataViewListModel::GetChildren(const wxDataViewItem &item, wxDataVi
 }
 
 unsigned int FilamentSpoolDataViewListModel::GetColumnCount() const {
-    return SpoolColumnCount;
+    return FslColumnCount;
 }
 
 wxString FilamentSpoolDataViewListModel::GetColumnType(unsigned int col) const {
@@ -26,28 +27,28 @@ void FilamentSpoolDataViewListModel::GetValue(wxVariant &variant, const wxDataVi
     auto spool = (FilamentSpool *) item.GetID();
 
     switch (col) {
-        case ColName:
+        case FslColName:
             variant = spool->name;
             break;
-        case ColVendor:
+        case FslColVendor:
             variant = spool->vendor;
             break;
-        case ColMaterial:
+        case FslColMaterial:
             variant = spool->material;
             break;
-        case ColWeightAvailable:
+        case FslColWeightAvailable:
             variant = spool->getWeightAvailable();
             break;
-        case ColWeightInitial:
+        case FslColWeightInitial:
             variant = spool->getWeightInitial();
             break;
-        case ColDiameter:
+        case FslColDiameter:
             variant = spool->getDiameter();
             break;
-        case ColPricePerKilo:
+        case FslColPricePerKilo:
             variant = spool->getPricePerKilo();
             break;
-        case ColPricePerSpool:
+        case FslColPricePerSpool:
             variant = spool->getPricePerSpool();
             break;
         default:
@@ -94,11 +95,11 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
     auto pricePerKilo1 = (item1Data->cost / item1Data->weightInitial * 1000);
     auto pricePerKilo2 = (item2Data->cost / item2Data->weightInitial * 1000);
     switch (column) {
-        case ColName:
-        case ColVendor:
-        case ColMaterial:
+        case FslColName:
+        case FslColVendor:
+        case FslColMaterial:
             return wxDataViewModel::Compare(item1, item2, column, ascending);
-        case ColWeightAvailable:
+        case FslColWeightAvailable:
             if (weightAvailable1 == weightAvailable2) {
                 return 0;
             } else if (weightAvailable1 < weightAvailable2) {
@@ -107,7 +108,7 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
                 return ascending ? -1 : 1;
             }
             break;
-        case ColWeightInitial:
+        case FslColWeightInitial:
             if (item1Data->weightInitial == item2Data->weightInitial) {
                 return 0;
             } else if (item1Data->weightInitial < item2Data->weightInitial) {
@@ -116,7 +117,7 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
                 return ascending ? -1 : 1;
             }
             break;
-        case ColDiameter:
+        case FslColDiameter:
             if (item1Data->diameter == item2Data->diameter) {
                 return 0;
             } else if (item1Data->diameter < item2Data->diameter) {
@@ -125,7 +126,7 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
                 return ascending ? -1 : 1;
             }
             break;
-        case ColPricePerKilo:
+        case FslColPricePerKilo:
             if (pricePerKilo1 == weightAvailable2) {
                 return 0;
             } else if (pricePerKilo1 < pricePerKilo2) {
@@ -134,7 +135,7 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
                 return ascending ? -1 : 1;
             }
             break;
-        case ColPricePerSpool:
+        case FslColPricePerSpool:
             if (item1Data->cost == item2Data->cost) {
                 return 0;
             } else if (item1Data->cost < item2Data->cost) {
@@ -154,15 +155,18 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     filamentSpoolDataViewListModel = new FilamentSpoolDataViewListModel();
 
     toolBar = CreateToolBar(wxTB_HORIZONTAL | wxTB_HORZ_LAYOUT | wxTB_NOICONS | wxTB_TEXT);
-    toolBar->AddTool(MainWindowActions::Reload, _("Filamente laden"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL, "", "",
-                     nullptr);
-    toolBar->AddTool(MainWindowActions::CopyName, _("Filamentname kopieren"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
-                     "", "", nullptr);
-    toolBar->AddTool(MainWindowActions::OpenProfiles, _(L"Profile öffnen"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
-                     "", "", nullptr);
+    toolBar->AddTool(MainWindowActions::MwaReload, _("Filamente laden"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL, "",
+                     "", nullptr);
+    toolBar->AddTool(MainWindowActions::MwaNewSpool, _(L"Neue Filamentrolle"), wxNullBitmap, wxNullBitmap,
+                     wxITEM_NORMAL, "", "", nullptr);
+    toolBar->AddTool(MainWindowActions::MwaCopyName, _("Filamentname kopieren"), wxNullBitmap, wxNullBitmap,
+                     wxITEM_NORMAL, "", "", nullptr);
+    toolBar->AddSeparator();
+    toolBar->AddTool(MainWindowActions::MwaOpenProfiles, _(L"Profile öffnen"), wxNullBitmap, wxNullBitmap,
+                     wxITEM_NORMAL, "", "", nullptr);
 
-    searchCtrl = new wxSearchCtrl(toolBar, Search, wxEmptyString, wxDefaultPosition, wxSize(200, -1),
-                                  wxTE_PROCESS_ENTER);
+    searchCtrl = new wxSearchCtrl(toolBar, MwaSearch, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxALIGN_RIGHT |
+                                                                                                         wxTE_PROCESS_ENTER);
     searchCtrl->ShowSearchButton(true);
     toolBar->AddControl(searchCtrl);
     toolBar->Realize();
@@ -172,7 +176,7 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     auto contentSizer = new wxBoxSizer(wxVERTICAL);
     panel->SetSizer(contentSizer);
 
-    dvlFilamentSpools = new wxDataViewListCtrl(panel, Spools, wxDefaultPosition,
+    dvlFilamentSpools = new wxDataViewListCtrl(panel, MwiSpools, wxDefaultPosition,
                                                wxDLG_UNIT(this, wxSize(-1, -1)), wxDV_ROW_LINES | wxDV_SINGLE);
     dvlFilamentSpools->AppendTextColumn(_("Name"), wxDATAVIEW_CELL_INERT, WXC_FROM_DIP(-2), wxALIGN_LEFT,
                                         wxDATAVIEW_COL_RESIZABLE | wxDATAVIEW_COL_REORDERABLE |
@@ -213,14 +217,20 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
         CentreOnScreen(wxBOTH);
     }
 
-    Bind(wxEVT_MENU, &MainWindow::handleReload, this, Reload);
-    Bind(wxEVT_MENU, &MainWindow::handleCopyName, this, CopyName);
-    Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &MainWindow::handleSearch, this, Search);
-    Bind(wxEVT_TEXT_ENTER, &MainWindow::handleSearch, this, Search);
+    Bind(wxEVT_MENU, &MainWindow::handleReload, this, MwaReload);
+    Bind(wxEVT_MENU, &MainWindow::handleCopyName, this, MwaCopyName);
+    Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &MainWindow::handleSearch, this, MwaSearch);
+    Bind(wxEVT_TEXT_ENTER, &MainWindow::handleSearch, this, MwaSearch);
     Bind(wxEVT_MENU, [this](wxCommandEvent &) {
         auto window = new ProfileListWindow(this);
         window->Show();
-    }, OpenProfiles);
+    }, MwaOpenProfiles);
+    Bind(wxEVT_MENU, [this](wxCommandEvent &event) {
+        auto window = new NewSpoolWindow(this);
+        window->ShowModal();
+
+        handleSearch(event);
+    }, MwaNewSpool);
     loadData("");
 }
 
@@ -245,7 +255,7 @@ void MainWindow::handleSearch(wxCommandEvent &event) {
     loadData(event.GetString().utf8_str().data());
 }
 
-void MainWindow::loadData(const std::string& keyword) {
+void MainWindow::loadData(const std::string &keyword) {
     try {
         pqxx::connection connection{CONNECTION_STRING};
         pqxx::work txn{connection};

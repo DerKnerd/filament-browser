@@ -35,27 +35,27 @@
 #endif
 
 enum FilamentSpoolListColumns {
-    ColName = 0,
-    ColVendor,
-    ColMaterial,
-    ColWeightAvailable,
-    ColWeightInitial,
-    ColPricePerKilo,
-    ColPricePerSpool,
-    ColDiameter,
-    ColDensity,
-    SpoolColumnCount,
+    FslColName = 0,
+    FslColVendor,
+    FslColMaterial,
+    FslColWeightAvailable,
+    FslColWeightInitial,
+    FslColPricePerKilo,
+    FslColPricePerSpool,
+    FslColDiameter,
+    FslColumnCount,
 };
 
 enum MainWindowActions {
-    Reload = 200,
-    CopyName,
-    Search,
-    OpenProfiles,
+    MwaReload = 200,
+    MwaCopyName,
+    MwaSearch,
+    MwaOpenProfiles,
+    MwaNewSpool,
 };
 
 enum MainWindowIDs {
-    Spools = 200,
+    MwiSpools = 200,
 };
 
 class FilamentSpool {

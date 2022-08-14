@@ -128,7 +128,7 @@ FilamentProfileDataViewListModel::Compare(const wxDataViewItem &item1, const wxD
 }
 
 void FilamentProfileDataViewListModel::add() {
-    auto profile = new FilamentProfile(-1, "", "", 0, 0);
+    auto profile = new FilamentProfile(-1, "", "", 1.24, 1.75);
     items.emplace_back(profile);
     ItemAdded(wxDataViewItem(nullptr), wxDataViewItem(profile));
 }
