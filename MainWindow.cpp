@@ -3,7 +3,7 @@
 //
 
 #include "MainWindow.h"
-#include <pqxx/result>
+#include "ProfileListWindow.h"
 
 unsigned int
 FilamentSpoolDataViewListModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const {
@@ -148,99 +148,6 @@ FilamentSpoolDataViewListModel::Compare(const wxDataViewItem &item1, const wxDat
     return 0;
 }
 
-
-unsigned int
-FilamentProfileDataViewListModel::GetChildren(const wxDataViewItem &item, wxDataViewItemArray &children) const {
-    for (auto elem: items) {
-        children.Add(wxDataViewItem(elem));
-    }
-
-    return items.size();
-}
-
-unsigned int FilamentProfileDataViewListModel::GetColumnCount() const {
-    return 4;
-}
-
-wxString FilamentProfileDataViewListModel::GetColumnType(unsigned int col) const {
-    return "string";
-}
-
-void
-FilamentProfileDataViewListModel::GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const {
-    auto profile = (FilamentProfile *) item.GetID();
-
-    switch (col) {
-        case ColVendor:
-            variant = profile->vendor;
-            break;
-        case ColMaterial:
-            variant = profile->material;
-            break;
-        case ColDiameter:
-            variant = profile->getDiameter();
-            break;
-        case ColDensity:
-            variant = profile->getDensity();
-            break;
-        default:
-            wxFAIL;
-            break;
-    }
-}
-
-bool
-FilamentProfileDataViewListModel::SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col) {
-    return true;
-}
-
-wxDataViewItem FilamentProfileDataViewListModel::GetParent(const wxDataViewItem &item) const {
-    return wxDataViewItem(nullptr);
-}
-
-bool FilamentProfileDataViewListModel::IsContainer(const wxDataViewItem &item) const {
-    return !item.IsOk();
-}
-
-void FilamentProfileDataViewListModel::Fill(const std::vector<FilamentProfile> &data) {
-    items.clear();
-
-    auto parent = wxDataViewItem(nullptr);
-    for (const auto &item: data) {
-        auto spool = new FilamentProfile(item.vendor, item.material, item.density, item.diameter);
-        items.emplace_back(spool);
-        ItemAdded(parent, wxDataViewItem(spool));
-    }
-}
-
-FilamentProfileDataViewListModel::FilamentProfileDataViewListModel()
-        : wxDataViewModel(), items(std::vector<FilamentProfile *>()) {}
-
-int
-FilamentProfileDataViewListModel::Compare(const wxDataViewItem &item1, const wxDataViewItem &item2, unsigned int column,
-                                          bool ascending) const {
-    auto item1Data = static_cast<FilamentSpool *>(item1.GetID());
-    auto item2Data = static_cast<FilamentSpool *>(item2.GetID());
-
-    switch (column) {
-        case ColVendor:
-        case ColMaterial:
-            return wxDataViewModel::Compare(item1, item2, column, ascending);
-        case ColDiameter:
-        case ColDensity:
-            if (item1Data->diameter == item2Data->diameter) {
-                return 0;
-            } else if (item1Data->diameter < item2Data->diameter) {
-                return ascending ? 1 : -1;
-            } else if (item1Data->diameter > item2Data->diameter) {
-                return ascending ? -1 : 1;
-            }
-            break;
-    }
-
-    return 0;
-}
-
 MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxDefaultPosition, wxSize(1280, 600),
                                    wxDEFAULT_FRAME_STYLE | wxCLIP_CHILDREN) {
     SetMinClientSize(wxSize(1280, 600));
@@ -250,6 +157,8 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     toolBar->AddTool(MainWindowActions::Reload, _("Filamente laden"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL, "", "",
                      nullptr);
     toolBar->AddTool(MainWindowActions::CopyName, _("Filamentname kopieren"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
+                     "", "", nullptr);
+    toolBar->AddTool(MainWindowActions::OpenProfiles, _(L"Profile öffnen"), wxNullBitmap, wxNullBitmap, wxITEM_NORMAL,
                      "", "", nullptr);
 
     searchCtrl = new wxSearchCtrl(toolBar, Search, wxEmptyString, wxDefaultPosition, wxSize(200, -1),
@@ -308,6 +217,10 @@ MainWindow::MainWindow() : wxFrame(nullptr, wxID_ANY, _("Filament Manager"), wxD
     Bind(wxEVT_MENU, &MainWindow::handleCopyName, this, CopyName);
     Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &MainWindow::handleSearch, this, Search);
     Bind(wxEVT_TEXT_ENTER, &MainWindow::handleSearch, this, Search);
+    Bind(wxEVT_MENU, [this](wxCommandEvent &) {
+        auto window = new ProfileListWindow(this);
+        window->Show();
+    }, OpenProfiles);
     loadData("");
 }
 
@@ -332,7 +245,7 @@ void MainWindow::handleSearch(wxCommandEvent &event) {
     loadData(event.GetString().utf8_str().data());
 }
 
-void MainWindow::loadData(std::string keyword) {
+void MainWindow::loadData(const std::string& keyword) {
     try {
         pqxx::connection connection{CONNECTION_STRING};
         pqxx::work txn{connection};
